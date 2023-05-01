@@ -1,0 +1,28 @@
+[build-system]
+requires = ['setuptools', 'wheel']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = "mnaccounts-client"
+requires-python = ">=3.7"
+
+#author = "Markiyan Kushnr"
+#author-email = "markiyan.kushnir@gmail.com"
+description = "Accounts Service Client"
+#url = "https://accouns.mkushir.mooo.com"
+
+dependencies = [
+    "requests",
+]
+
+dynamic = [
+    "version",
+]
+
+[tool.setuptools]
+packages = [
+    "mnaclient",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "mnaclient.version.__version__"}
