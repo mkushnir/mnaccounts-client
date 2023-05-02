@@ -182,31 +182,47 @@ class _MNAccountAPIClientBase:
             data = None
 
         data = self._auth_call('post', '/account', data=data, retry_on_error=(not force))
-        # print(data)
 
     def _uinfo(self):
         return self._auth_call('get', '/account')
 
     def _discover_api_url(self):
-        self._api_url = 'https://{}'.format(self._session.cookies.list_domains()[0])
 
-        # tmpurl = urlsplit(self._auth_url)
-        # self._api_url = '{}://{}'.format(tmpurl.scheme, tmpurl.netloc)
+        tmpurl = urlsplit(self._auth_url)
 
-        # if len(self._creds) == 3:
-        #     data = self.api_user_get(login=self._creds[0])
-        #     target = self._creds[2]
+        params = {}
 
-        # elif len(self._creds) == 2:
-        #     data = self.api_user_get(apikey=self._creds[0])
-        #     target = self._creds[1]
+        if len(self._creds) == 3:
+            params['login'] = self._creds[0]
+            target = self._creds[2]
 
-        # else:
-        #     raise Exception('invalid creds {}'.format(self._creds))
+        elif len(self._creds) == 2:
+            params['apikey'] = self._creds[0]
+            target = self._creds[1]
 
-        # user = data[0]
-        # data = self.api_user_target_get(user_id=user['id'])
-        # t = [i for i in data if i['label'] == target]
+        else:
+            raise Exception('invalid creds {}'.format(self._creds))
 
-        # url = urlsplit(t[0]['url'])
-        # self._api_url = '{}://{}'.format(url.scheme, url.netloc)
+        u = '{}://{}'.format(tmpurl.scheme, tmpurl.netloc)
+        rv = self._call(
+            u,
+            'get',
+            '/v1/user',
+            params
+        )
+
+        user = rv['data'][0]
+
+        rv = self._call(
+            u,
+            'get',
+            '/v1/user_target',
+            {
+                'user_id': user['id']
+            }
+        )
+
+        t = [i for i in rv['data'] if i['label'] == target]
+
+        url = urlsplit(t[0]['url'])
+        self._api_url = '{}://{}'.format(url.scheme, url.netloc)
