@@ -103,7 +103,7 @@ class _MNAccountAPIClientBase:
 
     def __init__(self, auth_url, creds, session_params=None):
         if session_params is None:
-            sessopm_params = {}
+            session_params = {}
 
         self._session = _requests_retry_session(**session_params)
 
