@@ -9,7 +9,7 @@ from .base import _MNAccountAPIClientBase
 from .policyeval import _policy_predicate_eval
 
 
-_re_policy = re.compile(r'(\S+)\s+(.+?)\s*(accept|reject|null)\s*;', re.DOTALL)
+_re_policy = re.compile(r'(\S+)\s+(.+?)\s*(accept|reject|null)?\s*;', re.DOTALL)
 
 _final = ('accept', 'reject', 'null')
 
@@ -36,6 +36,7 @@ class _policy_runner:
         '_pred_cache',
         '_pred_cache_ts',
         '_locals',
+        '_mnacl',
     )
 
 
@@ -67,7 +68,7 @@ class _policy_runner:
             for i in items:
                 d[i[0]].append(i)
 
-            ts = policy[0]['ts']
+            ts = datetime.strptime(policy[0]['ts'], '%Y-%m-%dT%H:%M:%S')
             if (ts is not None) and (ts > self._pred_cache_ts):
                 self._pred_cache = {}
                 self._pred_cache_ts = ts

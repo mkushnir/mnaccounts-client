@@ -193,11 +193,11 @@ class _MNAccountAPIClientBase:
         params = {}
 
         if len(self._creds) == 3:
-            params['login'] = self._creds[0]
+            params['user.login'] = self._creds[0]
             target = self._creds[2]
 
         elif len(self._creds) == 2:
-            params['apikey'] = self._creds[0]
+            params['user.apikey'] = self._creds[0]
             target = self._creds[1]
 
         else:
