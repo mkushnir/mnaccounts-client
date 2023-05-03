@@ -249,6 +249,7 @@ def policy_validation(session_, user_, req_, policy, tag_selector=None):  # noqa
 
 
 def get_policy_service():
+    global _pr
     return _pr
 
 

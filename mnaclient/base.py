@@ -101,7 +101,7 @@ class _MNAccountAPIClientBase:
     """"""
     _session_cookie_file = '.mnaccountapiclient.cookie'
 
-    def __init__(self, auth_url, creds, session_params=None):
+    def __init__(self, auth_url, creds, api_url=None, session_params=None):
         if session_params is None:
             session_params = {}
 
@@ -114,6 +114,7 @@ class _MNAccountAPIClientBase:
 
         self._auth_url = auth_url
         self._creds = creds
+        self._api_url = api_url
         self._login()
         self._discover_api_url()
 
@@ -186,7 +187,9 @@ class _MNAccountAPIClientBase:
     def _uinfo(self):
         return self._auth_call('get', '/account')
 
-    def _discover_api_url(self):
+    def _discover_api_url(self, force=False):
+        if not force and (self._api_url is not None):
+            return
 
         tmpurl = urlsplit(self._auth_url)
 
