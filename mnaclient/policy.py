@@ -25,11 +25,13 @@ _session_selected_attributes = ('permanent', 'new', 'modified', 'accessed')
 _session_selected_keys = (('_id', 'id'), ('_user_id', 'user_id'), ('uinfo', 'uinfo'))
 Session = namedtuple('Session', _session_selected_attributes + tuple(i[1] for i in _session_selected_keys))
 
+
 class _mnaclient(_MNAccountAPIClientBase):
     def policy_get(self, label):
         return self._api_call('get', '/v1/policy', {
             'label': label
         })['data']
+
 
 class _policy_runner:
     __slots__ = (
@@ -83,6 +85,7 @@ class _policy_runner:
         return statements
 
 _pr = None
+
 
 
 def policy_parse(s):  # noqa
@@ -229,6 +232,7 @@ def _policy_validation(
 
     rv.append((level, -1, (None, None, None), None))
 
+
 def policy_validation(session_, user_, req_, policy, tag_selector=None):  # noqa
     rv = []
 
@@ -242,6 +246,11 @@ def policy_validation(session_, user_, req_, policy, tag_selector=None):  # noqa
             0, rv, session_, user_, req_, locals_, enumerate(items), tag_selector)
 
     return rv
+
+
+def get_policy_service():
+    return _pr
+
 
 def init(auth_url, creds):
     global _pr
