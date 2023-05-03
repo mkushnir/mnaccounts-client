@@ -1,0 +1,9 @@
+__pycache__
+*.egg-info
+*.py[co]
+.venv
+
+package-lock.json
+
+._*
+*.db
