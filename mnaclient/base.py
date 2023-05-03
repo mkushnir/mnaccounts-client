@@ -101,7 +101,7 @@ class _MNAccountAPIClientBase:
     """"""
     _session_cookie_file = '.mnaccountapiclient.cookie'
 
-    def __init__(self, auth_url, creds, api_url=None, session_params=None):
+    def __init__(self, auth_url, creds, session_params=None):
         if session_params is None:
             session_params = {}
 
@@ -113,10 +113,9 @@ class _MNAccountAPIClientBase:
                 self._session.cookies.update(saved_cookie)
 
         self._auth_url = auth_url
+        self._api_url = None
         self._creds = creds
-        self._api_url = api_url
         self._login()
-        self._discover_api_url()
 
     def _call(self, url, method, endpoint, params=None, data=None, retry_on_error=True):
         headers = {
@@ -182,50 +181,20 @@ class _MNAccountAPIClientBase:
         else:
             data = None
 
-        data = self._auth_call('post', '/account', data=data, retry_on_error=(not force))
+        rv = self._auth_call(
+            'post', '/account', data=data, retry_on_error=(not force))
 
-    def _uinfo(self):
-        return self._auth_call('get', '/account')
+        uinfo = rv['data']
 
-    def _discover_api_url(self, force=False):
-        if not force and (self._api_url is not None):
-            return
+        target = uinfo['target']
 
-        tmpurl = urlsplit(self._auth_url)
+        u = urlsplit(target['url'])
 
-        params = {}
+        self._api_url = '{}://{}'.format(u.scheme, u.neloc)
 
-        if len(self._creds) == 3:
-            params['user.login'] = self._creds[0]
-            target = self._creds[2]
+    def _uinfo(self, force=False):
+        if not force and (self._uinfo is not None):
+            return self._uinfo
 
-        elif len(self._creds) == 2:
-            params['user.apikey'] = self._creds[0]
-            target = self._creds[1]
-
-        else:
-            raise Exception('invalid creds {}'.format(self._creds))
-
-        u = '{}://{}'.format(tmpurl.scheme, tmpurl.netloc)
-        rv = self._call(
-            u,
-            'get',
-            '/v1/user',
-            params
-        )
-
-        user = rv['data'][0]
-
-        rv = self._call(
-            u,
-            'get',
-            '/v1/user_target',
-            {
-                'user_id': user['id']
-            }
-        )
-
-        t = [i for i in rv['data'] if i['label'] == target]
-
-        url = urlsplit(t[0]['url'])
-        self._api_url = '{}://{}'.format(url.scheme, url.netloc)
+        rv = self._auth_call('get', '/account')
+        self._uinfo = rv['data']
