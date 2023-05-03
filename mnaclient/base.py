@@ -190,7 +190,7 @@ class _MNAccountAPIClientBase:
 
         u = urlsplit(target['url'])
 
-        self._api_url = '{}://{}'.format(u.scheme, u.neloc)
+        self._api_url = '{}://{}'.format(u.scheme, u.netloc)
 
     def _uinfo(self, force=False):
         if not force and (self._uinfo is not None):
