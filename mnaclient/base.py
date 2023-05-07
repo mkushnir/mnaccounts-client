@@ -16,6 +16,7 @@ def _requests_retry_session(
         status_forcelist=(
             500,
             502,
+            503,
             504,
         )):
     session = requests.Session()
@@ -148,13 +149,23 @@ class _MNAccountAPIClientBase:
                 return self._call(
                     url, method, endpoint, params, data, retry_on_error=False)
             else:
-                res = response.json()
-                raise Exception('api failure: code {} data {}'.format(
+                try:
+                    res = response.json()
+
+                except Exception:
+                    res = response.text
+
+                raise Exception('http error: code {} data {}'.format(
                     response.status_code, res))
 
         else:
-            res = response.json()
-            raise Exception('api failure: code {} data {}'.format(
+            try:
+                res = response.json()
+
+            except Exception:
+                res = response.text
+
+            raise Exception('http error: code {} data {}'.format(
                 response.status_code, res))
 
     def _auth_call(self, method, endpoint, params=None, data=None, retry_on_error=True):
@@ -163,8 +174,15 @@ class _MNAccountAPIClientBase:
     def _api_call(self, method, endpoint, params=None, data=None, retry_on_error=True):
         return self._call(self._api_url, method, endpoint, params, data, retry_on_error)
 
+    def _api_url_from_uinfo(self, uinfo):
+        target = uinfo['target']
+        u = urlsplit(target['url'])
+        self._api_url = '{}://{}'.format(u.scheme, u.netloc)
+
     def _login(self, force=False):
-        if ('session' in self._session.cookies) and not force:
+        if ('session' in self._session.cookies) and \
+                (self._api_url is not None) and \
+                not force:
             return
 
         if len(self._creds) == 3:
@@ -186,15 +204,4 @@ class _MNAccountAPIClientBase:
 
         uinfo = rv['data']
 
-        target = uinfo['target']
-
-        u = urlsplit(target['url'])
-
-        self._api_url = '{}://{}'.format(u.scheme, u.netloc)
-
-    def _uinfo(self, force=False):
-        if not force and (self._uinfo is not None):
-            return self._uinfo
-
-        rv = self._auth_call('get', '/account')
-        self._uinfo = rv['data']
+        self._api_url_from_uinfo(uinfo)
