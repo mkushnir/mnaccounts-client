@@ -9,7 +9,7 @@ from .base import _MNAccountAPIClientBase
 from .policyeval import _policy_predicate_eval
 
 
-_re_policy = re.compile(r'(\S+)\s+(.+?)\s*(accept|reject|null)?\s*;', re.DOTALL)
+_re_policy = re.compile(r'(\S+)\s+(.+?)\s*\b(accept|reject|null)?\s*;', re.DOTALL)
 
 _final = ('accept', 'reject', 'null')
 
@@ -108,7 +108,7 @@ def _make_locals(session_, user_, req_):
 
     user = User(*(getattr(user_, i) for i in _user_selected_attributes))
 
-    if req_.content_type == 'application/json':
+    if req_.content_type == 'application/json' and req_.content_length:
         req = Request(
             *(getattr(req_, i) for i in _request_selected_attributes))
     else:
