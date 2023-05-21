@@ -125,6 +125,24 @@ def _make_locals(session_, user_, req_):
 
 
 def _policy_action(session_, user_, req_, locals_, statements, tag_selector):
+    """Evaluate policy, tell action.
+
+    Statements can refer other policies, then this is a recursive call.
+
+    It is a responsibility of the policy designer to not make recursion loops.
+
+    Parameters:
+        see policy_action()
+
+    Return:
+        tuple of:
+            - index: zero-based, of the matched statment;
+            - tag: matched tag;
+            - action: matched action.
+
+        if any statement matched the context.  Othersise return
+        (-1, None, None).
+    """
     for idx, (tag, pred, action) in statements:
         tag_ = tag.strip()
 
@@ -135,21 +153,27 @@ def _policy_action(session_, user_, req_, locals_, statements, tag_selector):
 
         if type(res) is list:
             statements_ = [
-                (idx, (tag, tpa[1], tpa[2])) for i, tpa in enumerate(res)]
+                (idx, (tag, tpa[1], tpa[2])) for _, tpa in enumerate(res)]
 
             ita = _policy_action(
                 session_, user_, req_, locals_, statements_, tag_selector)
+
             if ita[0] == -1:
+                # no match
                 continue
 
             else:
+                # match
                 return ita
         else:
             if res:
+                # match
                 return idx, tag, action
             else:
+                # no match
                 continue
 
+    # no match
     return -1, None, None
 
 
@@ -217,6 +241,7 @@ def _policy_validation(
             if type(res) is list:
                 statements_ = [
                     (idx, (tag, tpa[1], tpa[2])) for i, tpa in enumerate(res)]
+
                 _policy_validation(
                     level + 1,
                     rv,
