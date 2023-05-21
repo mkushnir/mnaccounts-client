@@ -9,7 +9,7 @@ from .base import _MNAccountAPIClientBase
 from .policyeval import _policy_predicate_eval
 
 
-_re_policy = re.compile(r'(\S+)\s+(.+?)\s*\b(accept|reject|null)?\s*;', re.DOTALL)
+_re_policy = re.compile(r'(\S+)\s+(.+?)\s*(\baccept|\breject|\bnull)?\s*;', re.DOTALL)
 
 _final = ('accept', 'reject', 'null')
 
@@ -27,9 +27,15 @@ Session = namedtuple('Session', _session_selected_attributes + tuple(i[1] for i 
 
 
 class _mnaclient(_MNAccountAPIClientBase):
+    def account_post(self, params, data):
+        return self._auth_call('post', '/account', params, data)
+
+    def account_get(self, params):
+        return self._auth_call('get', '/account', params)
+
     def policy_get(self, label):
         return self._api_call('get', '/v1/policy', {
-            'label': label
+            'policy.label': label
         })['data']
 
 
