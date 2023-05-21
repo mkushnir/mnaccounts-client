@@ -77,7 +77,7 @@ class _policy_runner:
                 d[i[0]].append(i)
 
             ts = datetime.strptime(policy[0]['ts'], '%Y-%m-%dT%H:%M:%S')
-            if (ts is not None) and (ts > self._pred_cache_ts):
+            if ts > self._pred_cache_ts:
                 self._pred_cache = {}
                 self._pred_cache_ts = ts
 
