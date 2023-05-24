@@ -3,6 +3,7 @@
 import re
 from datetime import datetime
 from collections import namedtuple, defaultdict
+from functools import lru_cache
 
 from .base import _MNAccountAPIClientBase
 
@@ -63,27 +64,31 @@ class _policy_runner:
         self._locals = None
         return False
 
+    @lru_cache
+    def _load(self, label_, ts):
+        d = defaultdict(list)
+
+        policy = self._mnacl.policy_get(label=label_)
+
+        if policy is None or not len(policy):
+            return None
+
+        items = policy_parse(policy[0]['statement'])
+
+        for i in items:
+            d[i[0]].append(i)
+
+        return d
+
     def load(self, label_, tag_):
-        if label_ not in self._pred_cache:
-            d = defaultdict(list)
+        # one-minute cache
+        ts = datetime.utcnow().replace(second=0, microsecond=0)
 
-            policy = self._mnacl.policy_get(label=label_)
+        d = self._load(label_, ts)
 
-            assert len(policy) is not None, 'no such policy: {}'.format(label_)
+        assert d is not None, 'no such policy: {}'.format(label_)
 
-            items = policy_parse(policy[0]['statement'])
-
-            for i in items:
-                d[i[0]].append(i)
-
-            ts = datetime.strptime(policy[0]['ts'], '%Y-%m-%dT%H:%M:%S')
-            if ts > self._pred_cache_ts:
-                self._pred_cache = {}
-                self._pred_cache_ts = ts
-
-            self._pred_cache[label_] = d
-
-        statements = self._pred_cache[label_].get(tag_)
+        statements = d.get(tag_)
 
         assert statements is not None, \
                 'no such tag in policy {}: {}'.format(label_, tag_)
