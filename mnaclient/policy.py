@@ -64,6 +64,9 @@ class _policy_runner:
         self._locals = None
         return False
 
+    def get_client(self):
+        return self._mnacl
+
     @lru_cache
     def _load(self, label_, ts):
         d = defaultdict(list)
