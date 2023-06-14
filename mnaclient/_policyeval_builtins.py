@@ -10,4 +10,4 @@ from builtins import (  # noqa
     str,
     float,
 )
-from datetime import date, time, datetime, timedelta, utcnow
+from datetime import date, time, datetime, timedelta
