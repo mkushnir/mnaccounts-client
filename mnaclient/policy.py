@@ -35,7 +35,7 @@ class _mnaclient(_MNAccountAPIClientBase):
         return self._auth_call('get', '/account', params)
 
     def account_delete(self, data):
-        return self._auth_call('delete', '/account', None, params)
+        return self._auth_call('delete', '/account', None, data)
 
     def policy_get(self, label):
         return self._api_call('get', '/v1/policy', {
