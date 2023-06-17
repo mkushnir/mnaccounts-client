@@ -37,69 +37,9 @@ def _requests_retry_session(
     return session
 
 
-class MNAccountClient:
-    """"""
-    def __init__(self, base_url):
-        self._session = requests.Session()
-        self._base_url = base_url
-
-    def _api_call(self, method, endpoint, params=None, data=None):
-        headers = {
-            'Accept': 'application/json',
-        }
-
-        if data is not None:
-            headers['Content-Type'] = 'application/json'
-
-        url = '{}{}'.format(self._base_url, endpoint)
-
-        response = self._session.request(
-            method,
-            url,
-            params=params,
-            headers=headers,
-            json=data)
-
-        if response.status_code == 200:
-            data = response.json()
-            return data['data']
-
-        elif response.status_code == 304:
-            return None
-
-        else:
-            data = response.json()
-            raise Exception('api failure: code {} data {}'.format(
-                response.status_code, data))
-
-    def account_get(self, ticket, login, target):
-        params = {
-            'ticket': ticket,
-            'login': login,
-            'target': target,
-        }
-
-        return self._api_call('get', '/account', params=params)
-
-    def account_post(self, login, password, target):
-        data = {
-            'login': login,
-            'password': password,
-            'target': target,
-        }
-
-        return self._api_call('post', '/account', data=data)
-
-    def account_delete(self, ticket):
-        data = {
-            'ticket': ticket,
-        }
-
-        return self._api_call('delete', '/account', data=data)
-
-
 class _MNAccountAPIClientBase:
-    """"""
+    """Base for account service clients."""
+
     _session_cookie_file = '.mnaccountapiclient.cookie'
 
     def __init__(self, auth_url, creds, session_params=None):

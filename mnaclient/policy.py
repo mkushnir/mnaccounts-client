@@ -45,16 +45,12 @@ class _mnaclient(_MNAccountAPIClientBase):
 
 class _policy_runner:
     __slots__ = (
-        '_pred_cache',
-        '_pred_cache_ts',
         '_locals',
         '_mnacl',
     )
 
 
     def __init__(self, auth_url, creds):
-        self._pred_cache = {}
-        self._pred_cache_ts = datetime.utcnow()
         self._locals = None
         self._mnacl = _mnaclient(
             auth_url, creds
@@ -290,7 +286,7 @@ def policy_validation(session_, user_, req_, policy, tag_selector=None):  # noqa
     return rv
 
 
-def get_policy_service():
+def get_service():
     global _pr
     return _pr
 
